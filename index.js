@@ -1,6 +1,4 @@
-// latest URL
-// https://dlapp-dmmgameplayer.games.dmm.com/latest.yml
-
+require('dotenv').config()
 const axios = require('axios').default;
 const fs = require('fs');
 const cron = require('cron')
@@ -9,8 +7,7 @@ const _7z = require('7zip-min');
 const asar = require('asar');
 const { Webhook, MessageBuilder } = require('discord-webhook-node');
 
-const config = require('./config.json')
-const hook = new Webhook(config.discord_webhook_url);
+const hook = new Webhook(process.env.WEBHOOK_URL);
 
 
 axios.defaults.baseURL = "https://dlapp-dmmgameplayer.games.dmm.com"
@@ -38,7 +35,7 @@ async function checkVersion() {
     asar.extractAll('./data/installer/resources/app.asar', './data/asar/')
 
     let template = fs.readFileSync('./template.js', 'utf-8');
-    template = template.replace('$PROXY_URL', config.http_proxy_url);
+    template = template.replace('$PROXY_URL', process.env.HTTP_PROXY_URL);
     fs.writeFileSync('./data/asar/dist/index.js', template);
     fs.copyFileSync('./data/asar/package.json', './data/package.json');
 
@@ -111,10 +108,11 @@ function sendWebhookMessage(version, releaseDate) {
 }
 
 function selectRandomMessage() {
-    const length = config.discord_webhook.length;
+    const characters = require('./character.json')
+    const length = characters.length;
     const entry = randomInRange(0, length - 1);
 
-    return config.discord_webhook[entry];
+    return characters[entry];
 }
 
 function randomInRange(start,end){
